@@ -1,0 +1,3 @@
+[console_scripts]
+rat_roulette_node = rat_roulette_pkg.rat_roulette_node:main
+

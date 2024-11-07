@@ -1,0 +1,28 @@
+[3.018s] Invoking command in '/home/ubuntu/final-turtwig/ros2_ws/src/rat_roulette_pkg': PYTHONPATH=/home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/rat_roulette_pkg build --build-base /home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/build install --record /home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/install.log --single-version-externally-managed install_data
+[4.240s] running egg_info
+[4.242s] writing ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/PKG-INFO
+[4.244s] writing dependency_links to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/dependency_links.txt
+[4.247s] writing entry points to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/entry_points.txt
+[4.247s] writing requirements to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/requires.txt
+[4.248s] writing top-level names to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/top_level.txt
+[4.256s] reading manifest file '../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/SOURCES.txt'
+[4.257s] adding license file 'LICENSE'
+[4.260s] writing manifest file '../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/SOURCES.txt'
+[4.261s] running build
+[4.261s] running build_py
+[4.262s] copying rat_roulette_pkg/rat_roulette_node.py -> /home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/build/lib/rat_roulette_pkg
+[4.264s] running install
+[4.265s] running install_lib
+[4.268s] copying /home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/build/lib/rat_roulette_pkg/rat_roulette_node.py -> /home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg
+[4.271s] byte-compiling /home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg/rat_roulette_node.py to rat_roulette_node.cpython-310.pyc
+[4.274s] running install_data
+[4.275s] copying package.xml -> /home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/share/rat_roulette_pkg
+[4.276s] creating /home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/share/rat_roulette_pkg/launch
+[4.276s] copying launch/roulette_launch.py -> /home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/share/rat_roulette_pkg/launch
+[4.277s] running install_egg_info
+[4.284s] removing '/home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[4.286s] Copying ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info to /home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg-0.0.0-py3.10.egg-info
+[4.293s] running install_scripts
+[4.369s] Installing rat_roulette_node script to /home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/lib/rat_roulette_pkg
+[4.370s] writing list of installed files to '/home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/install.log'
+[4.500s] Invoked command in '/home/ubuntu/final-turtwig/ros2_ws/src/rat_roulette_pkg' returned '0': PYTHONPATH=/home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/final-turtwig/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/rat_roulette_pkg build --build-base /home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/build install --record /home/ubuntu/final-turtwig/ros2_ws/build/rat_roulette_pkg/install.log --single-version-externally-managed install_data
