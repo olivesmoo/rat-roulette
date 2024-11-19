@@ -24,7 +24,7 @@ class RatRoulette(Node):
         self.RESET = 6
 
         self.SPEED_LINEAR = 0.3
-        self.SPEED_ANGULAR = 0.8
+        self.SPEED_ANGULAR = 3
 
         self.image_width = 300
         self.last_detection = None
@@ -32,6 +32,7 @@ class RatRoulette(Node):
         self.state = self.START # Set initial state
         self.result = 0 #index of results
         self.results = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4]]
+        self.spin_times = [5, 6, 7, 8, 9, 10, 11, 12] #TODO: Change when we have the times for each spin
 
         self.state_ts = self.get_clock().now()
         self.second = False
@@ -59,7 +60,7 @@ class RatRoulette(Node):
         if self.state == self.START:
             if self.last_detection is not None:
                 print("camera active?")
-                self.result = random.randint(1, 8)
+                self.result = random.randint(0, 7)
                 self.go_state(self.SPIN)
             else:
                 print("camera not working")
@@ -121,7 +122,7 @@ class RatRoulette(Node):
         return False
     def check_spin_time(self):
         elapsed = self.get_clock().now() - self.state_ts
-        return elapsed >= Duration(seconds=self.result*5) #find out how much time for each answer
+        return elapsed >= Duration(seconds=self.spin_times[result]) #find out how much time for each answer
 def main(args=None):
     print('Hi from rat_roulette_pkg.')
     rclpy.init(args=args)
