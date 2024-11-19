@@ -24,7 +24,7 @@ class RatRoulette(Node):
         self.RESET = 6
 
         self.SPEED_LINEAR = 0.3
-        self.SPEED_ANGULAR = 0.3
+        self.SPEED_ANGULAR = 0.8
 
         self.image_width = 300
         self.last_detection = None
@@ -48,17 +48,22 @@ class RatRoulette(Node):
 
     def person_detection_callback(self, msg):
         self.last_detection = msg
+        print(msg)
 
     def control_cycle(self):
         out_vel = Twist()
+        if self.person_detected():
+            print("yayyyyy, i see you!")
+        print("curr state: ", self.state)
 
         if self.state == self.START:
             if self.last_detection is not None:
-                self.result = random.uniform(1, 8)
+                print("camera active?")
+                self.result = random.randint(1, 8)
                 self.go_state(self.SPIN)
             else:
                 print("camera not working")
-            self.go_state(self.SPIN)
+            #self.go_state(self.SPIN)
         elif self.state == self.SPIN:
             if self.check_spin_time():
                 out_vel.angular.z = 0.0
@@ -116,7 +121,7 @@ class RatRoulette(Node):
         return False
     def check_spin_time(self):
         elapsed = self.get_clock().now() - self.state_ts
-        return elapsed >= Duration(seconds=self.result*1) #find out how much time for each answer
+        return elapsed >= Duration(seconds=self.result*5) #find out how much time for each answer
 def main(args=None):
     print('Hi from rat_roulette_pkg.')
     rclpy.init(args=args)
