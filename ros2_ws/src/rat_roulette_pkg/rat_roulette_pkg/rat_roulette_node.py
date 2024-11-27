@@ -24,15 +24,19 @@ class RatRoulette(Node):
         self.RESET = 6
 
         self.SPEED_LINEAR = 0.3
-        self.SPEED_ANGULAR = 3
+        self.SPEED_ANGULAR = 3.0
 
         self.image_width = 300
         self.last_detection = None
 
         self.state = self.START # Set initial state
         self.result = 0 #index of results
-        self.results = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4]]
-        self.spin_times = [5, 6, 7, 8, 9, 10, 11, 12] #TODO: Change when we have the times for each spin
+
+        self.r_time = 3.345
+        self.s_time = self.r_time / 8
+        self.offset = self.s_time / 2
+        self.results = [[0, 1], [0, 2], [0, 3], [0, 4], [1, 1], [1, 2], [1, 3], [1, 4]]
+        self.spin_times = [self.s_time * 31 + self.offset , self.s_time * 25 + self.offset, self.s_time * 27 + self.offset, self.s_time * 29 + self.offset, self.s_time * 26 + self.offset, self.s_time * 28 + self.offset, self.s_time * 30 + self.offset, self.s_time * 32 + self.offset] #TODO: Change when we have the times for each spin
 
         self.state_ts = self.get_clock().now()
         self.second = False
@@ -49,7 +53,7 @@ class RatRoulette(Node):
 
     def person_detection_callback(self, msg):
         self.last_detection = msg
-        print(msg)
+        #print(msg)
 
     def control_cycle(self):
         out_vel = Twist()
@@ -61,11 +65,13 @@ class RatRoulette(Node):
             if self.last_detection is not None:
                 print("camera active?")
                 self.result = random.randint(0, 7)
+                print("random result: ", self.result)
                 self.go_state(self.SPIN)
             else:
                 print("camera not working")
             #self.go_state(self.SPIN)
         elif self.state == self.SPIN:
+            #os.system("mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/win.mp3")
             if self.check_spin_time():
                 out_vel.angular.z = 0.0
                 self.go_state(self.ANNOUNCE)
@@ -73,7 +79,9 @@ class RatRoulette(Node):
                 out_vel.angular.z = self.SPEED_ANGULAR
         elif self.state == self.ANNOUNCE:
             print("The result is... ", self.results[self.result])
-            self.go_state(self.NAVIGATE)
+            elapsed = self.get_clock().now() - self.state_ts
+            if elapsed >= Duration(seconds=10):
+                self.go_state(self.NAVIGATE)
         elif self.state == self.NAVIGATE:
             # navigate to answer
             if not self.second:
@@ -122,7 +130,8 @@ class RatRoulette(Node):
         return False
     def check_spin_time(self):
         elapsed = self.get_clock().now() - self.state_ts
-        return elapsed >= Duration(seconds=self.spin_times[result]) #find out how much time for each answer
+        print("elapsed time: ", elapsed)
+        return elapsed >= Duration(seconds=self.spin_times[self.result]) #find out how much time for each answer
 def main(args=None):
     print('Hi from rat_roulette_pkg.')
     rclpy.init(args=args)
