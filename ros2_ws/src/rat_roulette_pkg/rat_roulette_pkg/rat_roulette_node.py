@@ -32,12 +32,13 @@ class RatRoulette(Node):
         self.state = self.START # Set initial state
         self.result = 0 #index of results
 
-        self.r_time = 3.345
-        self.s_time = self.r_time / 8
+        self.r_time = 3.345 # time per rotation
+        self.s_time = self.r_time / 8 # time per slice
         self.offset = self.s_time / 2
         self.results = [[0, 1], [0, 2], [0, 3], [0, 4], [1, 1], [1, 2], [1, 3], [1, 4]]
         self.spin_times = [self.s_time * 31 + self.offset , self.s_time * 25 + self.offset, self.s_time * 27 + self.offset, self.s_time * 29 + self.offset, self.s_time * 26 + self.offset, self.s_time * 28 + self.offset, self.s_time * 30 + self.offset, self.s_time * 32 + self.offset] #TODO: Change when we have the times for each spin
 
+        self.color_times = [self.s_time * 7, self.s_time * 5, self.s_time * 3, self.s_time, self.s_time * 3, self.s_time, self.s_time * 7, self.s_time * 5]
         self.state_ts = self.get_clock().now()
         self.second = False
 
@@ -72,12 +73,13 @@ class RatRoulette(Node):
             #self.go_state(self.SPIN)
         elif self.state == self.SPIN:
             #os.system("mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/win.mp3")
-            if self.check_spin_time():
+            if self.check_spin_time(self.spin_times[self.result]):
                 out_vel.angular.z = 0.0
                 self.go_state(self.ANNOUNCE)
             else:
                 out_vel.angular.z = self.SPEED_ANGULAR
         elif self.state == self.ANNOUNCE:
+            #os.system("mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/win.mp3")
             print("The result is... ", self.results[self.result])
             elapsed = self.get_clock().now() - self.state_ts
             if elapsed >= Duration(seconds=10):
@@ -85,12 +87,49 @@ class RatRoulette(Node):
         elif self.state == self.NAVIGATE:
             # navigate to answer
             if not self.second:
-                pass
-                # navigate to results[result[0]]
+                #turn to face right side 
+                #total = self.s_time * 38
+                #diff = total - self.spin_times[self.result]
+                if not self.check_spin_time(self.color_times[self.result]):
+                    out_vel.angular.z = self.SPEED_ANGULAR
+                else:
+                    out_vel.angular.z = 0.0
+                    if self.results[self.result][0] == 0:
+                        print("its black")
+                        # nav to black
+                        # detect person
+                        # wait 10 sec
+                        # return back to middle
+                        self.go_state(self.DETECT)
+                    else:
+                        print("its red")
+                        # nav to red
+                        # detect person
+                        # wait 10 sec
+                        # return back to middle
+                        self.go_state(self.DETECT)
             else:
-                #navigate to results[result[1]]
-                pass
-            self.go_state(self.DETECT)
+                # turn to left side
+                number = self.results[self.result][1]
+                if number == 1:
+                    print("its 1")
+                    # nav to 1
+                    # detect person
+                    # wait 10 sec
+                    # return to middle
+                elif number == 2:
+                    print("its 2")
+                    # nav to 2
+                    #ditto
+                elif number == 3:
+                    print("its 3")
+                    #ditto
+                else:
+                    print("its 4")
+                    #nav to 4
+                    #ditto
+                self.go_state(self.DETECT)
+
         elif self.state == self.DETECT:
             if self.person_detected():
                 print("Congrats!")
@@ -128,10 +167,12 @@ class RatRoulette(Node):
                     if abs(bbox_center_x - image_center_x) <= tolerance:
                         return True
         return False
-    def check_spin_time(self):
+    def check_spin_time(self, duration):
         elapsed = self.get_clock().now() - self.state_ts
         print("elapsed time: ", elapsed)
-        return elapsed >= Duration(seconds=self.spin_times[self.result]) #find out how much time for each answer
+        print("duration: " , duration)
+        return elapsed >= Duration(seconds=duration)
+        #return elapsed >= Duration(seconds=self.spin_times[self.result]) #find out how much time for each answer
 def main(args=None):
     print('Hi from rat_roulette_pkg.')
     rclpy.init(args=args)
