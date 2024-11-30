@@ -39,7 +39,7 @@ class RatRoulette(Node):
         self.results = [[0, 1], [0, 2], [0, 3], [0, 4], [1, 1], [1, 2], [1, 3], [1, 4]]
         self.spin_times = [self.s_time * 31 + self.offset , self.s_time * 25 + self.offset, self.s_time * 27 + self.offset, self.s_time * 29 + self.offset, self.s_time * 26 + self.offset, self.s_time * 28 + self.offset, self.s_time * 30 + self.offset, self.s_time * 32 + self.offset] #TODO: Change when we have the times for each spin
 
-        self.color_times = [self.s_time * 7, self.s_time * 5, self.s_time * 3, self.s_time, self.s_time * 3, self.s_time, self.s_time * 7, self.s_time * 5]
+        self.color_times = [self.s_time * 7, self.s_time * 5, self.s_time * 3, self.s_time, self.s_time * 3 - self.offset, self.s_time - self.offset, self.s_time * 7 - self.offset, self.s_time * 5 - self.offset]
         self.state_ts = self.get_clock().now()
         self.second = False
 
@@ -117,7 +117,7 @@ class RatRoulette(Node):
                         out_vel.angular.z = self.SPEED_ANGULAR
                         print("its 4")
                 else:
-                    if not self.check_spin_time(self.s_time + 4.0):
+                    if not self.check_spin_time(self.s_time + 3.0):
                         out_vel.linear.x = self.SPEED_LINEAR
                     else:
                         self.go_state(self.DETECT)
@@ -144,7 +144,7 @@ class RatRoulette(Node):
                 if not self.check_spin_time(5.0):
                     out_vel.linear.x = self.SPEED_LINEAR
                 else:
-                    if not self.check_spin_time(5.0 + self.offset):
+                    if not self.check_spin_time(5.0 + self.s_time):
                         if self.results[self.result][0] == 0:
                             out_vel.angular.z = -self.SPEED_ANGULAR
                         else:
@@ -153,7 +153,13 @@ class RatRoulette(Node):
                         self.go_state(self.NAVIGATE)
         elif self.state == self.RESET:
             # go back to original position
-            self.go_state(self.START)
+            if not self.check_spin_time(self.r_time/2):
+                out_vel.angular.z = self.SPEED_ANGULAR
+            else:
+                if not self.check_spin_time(5.0):
+                    out_vel.linear.x = self.SPEED_LINEAR
+                else:
+                    self.go_state(self.START)
 
         self.vel_pub.publish(out_vel)
 
