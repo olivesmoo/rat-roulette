@@ -102,27 +102,25 @@ class RatRoulette(Node):
                         self.go_state(self.DETECT)
             else:
                 # turn to left side
-                if not self.check_spin_time(self.r_time/2):
-                    out_vel.angular.z = self.SPEED_ANGULAR
-                number = self.results[self.result][1]
-                if number == 1:
-                    print("its 1")
-                    # nav to 1
-                    # detect person
-                    # wait 10 sec
-                    # return to middle
-                elif number == 2:
-                    print("its 2")
-                    # nav to 2
-                    #ditto
-                elif number == 3:
-                    print("its 3")
-                    #ditto
+                if not self.check_spin_time(self.s_time):
+                    number = self.results[self.result][1]
+                    if number == 1:
+                        print("its 1")
+                        out_vel.angular.z = -self.SPEED_ANGULAR
+                    elif number == 2:
+                        out_vel.angular.z = -self.SPEED_ANGULAR
+                        print("its 2")
+                    elif number == 3:
+                        out_vel.angular.z = self.SPEED_ANGULAR
+                        print("its 3")
+                    else:
+                        out_vel.angular.z = self.SPEED_ANGULAR
+                        print("its 4")
                 else:
-                    print("its 4")
-                    #nav to 4
-                    #ditto
-                self.go_state(self.DETECT)
+                    if not self.check_spin_time(self.s_time + 4.0):
+                        out_vel.linear.x = self.SPEED_LINEAR
+                    else:
+                        self.go_state(self.DETECT)
 
         elif self.state == self.DETECT:
             wait_time = 0
