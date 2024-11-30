@@ -1,0 +1,25 @@
+[3.604s] Invoking command in '/home/ubuntu/rat-roulette/ros2_ws/src/rat_roulette_pkg': PYTHONPATH=/home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/prefix_override:/home/ubuntu/rat-roulette/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/rat_roulette_pkg build --build-base /home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/build install --record /home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/install.log --single-version-externally-managed
+[5.021s] running egg_info
+[5.025s] writing ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/PKG-INFO
+[5.026s] writing dependency_links to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/dependency_links.txt
+[5.027s] writing entry points to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/entry_points.txt
+[5.028s] writing requirements to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/requires.txt
+[5.029s] writing top-level names to ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/top_level.txt
+[5.040s] reading manifest file '../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/SOURCES.txt'
+[5.041s] adding license file 'LICENSE'
+[5.044s] writing manifest file '../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info/SOURCES.txt'
+[5.045s] running build
+[5.045s] running build_py
+[5.046s] copying rat_roulette_pkg/rat_roulette_node.py -> /home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/build/lib/rat_roulette_pkg
+[5.048s] running install
+[5.049s] running install_lib
+[5.054s] copying /home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/build/lib/rat_roulette_pkg/rat_roulette_node.py -> /home/ubuntu/rat-roulette/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg
+[5.057s] byte-compiling /home/ubuntu/rat-roulette/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg/rat_roulette_node.py to rat_roulette_node.cpython-310.pyc
+[5.062s] running install_data
+[5.065s] running install_egg_info
+[5.076s] removing '/home/ubuntu/rat-roulette/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[5.078s] Copying ../../build/rat_roulette_pkg/rat_roulette_pkg.egg-info to /home/ubuntu/rat-roulette/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages/rat_roulette_pkg-0.0.0-py3.10.egg-info
+[5.086s] running install_scripts
+[5.173s] Installing rat_roulette_node script to /home/ubuntu/rat-roulette/ros2_ws/install/rat_roulette_pkg/lib/rat_roulette_pkg
+[5.174s] writing list of installed files to '/home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/install.log'
+[5.331s] Invoked command in '/home/ubuntu/rat-roulette/ros2_ws/src/rat_roulette_pkg' returned '0': PYTHONPATH=/home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/prefix_override:/home/ubuntu/rat-roulette/ros2_ws/install/rat_roulette_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/rat_roulette_pkg build --build-base /home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/build install --record /home/ubuntu/rat-roulette/ros2_ws/build/rat_roulette_pkg/install.log --single-version-externally-managed
