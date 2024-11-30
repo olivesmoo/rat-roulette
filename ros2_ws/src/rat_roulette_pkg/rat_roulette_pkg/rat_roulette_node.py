@@ -22,8 +22,9 @@ class RatRoulette(Node):
         self.DETECT = 4
         self.REWARD = 5
         self.RESET = 6
+        self.MIDDLE = 7
 
-        self.SPEED_LINEAR = 0.3
+        self.SPEED_LINEAR = 0.2
         self.SPEED_ANGULAR = 3.0
 
         self.image_width = 300
@@ -90,26 +91,19 @@ class RatRoulette(Node):
                 #turn to face right side 
                 #total = self.s_time * 38
                 #diff = total - self.spin_times[self.result]
-                if not self.check_spin_time(self.color_times[self.result]):
+                if not self.check_spin_time(self.color_times[self.result]-0.1):
                     out_vel.angular.z = self.SPEED_ANGULAR
                 else:
                     out_vel.angular.z = 0.0
-                    if self.results[self.result][0] == 0:
-                        print("its black")
-                        # nav to black
-                        # detect person
-                        # wait 10 sec
-                        # return back to middle
-                        self.go_state(self.DETECT)
+                    if not self.check_spin_time(self.color_times[self.result] + 2.9):
+                        out_vel.linear.x = self.SPEED_LINEAR
                     else:
-                        print("its red")
-                        # nav to red
-                        # detect person
-                        # wait 10 sec
-                        # return back to middle
+                        out_vel.linear.x = 0.0
                         self.go_state(self.DETECT)
             else:
                 # turn to left side
+                if not self.check_spin_time(self.r_time/2):
+                    out_vel.angular.z = self.SPEED_ANGULAR
                 number = self.results[self.result][1]
                 if number == 1:
                     print("its 1")
@@ -131,16 +125,34 @@ class RatRoulette(Node):
                 self.go_state(self.DETECT)
 
         elif self.state == self.DETECT:
-            if self.person_detected():
+            wait_time = 0
+            if not self.person_detected() and self.check_spin_time(5):
+                print(":( No winners")
+                wait_time = 3
+            else:
                 print("Congrats!")
+                wait_time = 10
+            if self.check_spin_time(5 + wait_time):
+                if not self.second:
+                    self.second = True
+                    self.go_state(self.MIDDLE)
+                else:
+                    self.second = False
+                    self.go_state(self.RESET)
+        elif self.state == self.MIDDLE:
+            if not self.check_spin_time(self.r_time/2):
+                out_vel.angular.z = self.SPEED_ANGULAR
             else:
-                print(":( No winnders")
-            if not self.second:
-                self.second = True
-                self.go_state(self.NAVIGATE)
-            else:
-                self.second = False
-                self.go_state(self.RESET)
+                if not self.check_spin_time(5.0):
+                    out_vel.linear.x = self.SPEED_LINEAR
+                else:
+                    if not self.check_spin_time(5.0 + self.offset):
+                        if self.results[self.result][0] == 0:
+                            out_vel.angular.z = -self.SPEED_ANGULAR
+                        else:
+                            out_vel.angular.z = self.SPEED_ANGULAR
+                    else:
+                        self.go_state(self.NAVIGATE)
         elif self.state == self.RESET:
             # go back to original position
             self.go_state(self.START)
