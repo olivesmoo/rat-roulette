@@ -1,6 +1,7 @@
 import rclpy
 import os
 import random
+import math
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
@@ -10,10 +11,14 @@ from vision_msgs.msg import Detection2DArray
 from cv_bridge import CvBridge
 from turtlebot4_navigation.turtlebot4_navigator import TurtleBot4Directions, TurtleBot4Navigator
 from gtts import gTTS
+from geometry_msgs.msg import PoseStamped
+from nav2_msgs.action import NavigateToPose
+from rclpy.action import ActionClient
 
 class RatRoulette(Node):
     def __init__(self):
         super().__init__('rat_roulette')
+        self._action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
 
         self.START = 0
         self.SPIN = 1
@@ -58,11 +63,12 @@ class RatRoulette(Node):
         #print(msg)
 
     def control_cycle(self):
+        
         out_vel = Twist()
         if self.person_detected():
             print("yayyyyy, i see you!")
         print("curr state: ", self.state)
-
+        '''
         if self.state == self.START:
             if self.last_detection is not None:
                 print("camera active?")
@@ -82,6 +88,7 @@ class RatRoulette(Node):
         elif self.state == self.ANNOUNCE:
             #os.system("mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/win.mp3")
             print("The result is... ", self.results[self.result])
+            os.system("mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/audio/win.mp3")
             elapsed = self.get_clock().now() - self.state_ts
             if elapsed >= Duration(seconds=10):
                 self.go_state(self.NAVIGATE)
@@ -160,6 +167,7 @@ class RatRoulette(Node):
                     out_vel.linear.x = self.SPEED_LINEAR
                 else:
                     self.go_state(self.START)
+        '''
 
         self.vel_pub.publish(out_vel)
 
@@ -189,6 +197,27 @@ class RatRoulette(Node):
         print("duration: " , duration)
         return elapsed >= Duration(seconds=duration)
         #return elapsed >= Duration(seconds=self.spin_times[self.result]) #find out how much time for each answer
+
+    def send_goal(self, position):
+        # Create a PoseStamped message
+        goal_msg = PoseStamped()
+        goal_msg.header.frame_id = 'map'
+        goal_msg.header.stamp = self.get_clock().now().to_msg()
+        goal_msg.pose.position.x = position[0]
+        goal_msg.pose.position.y = position[1]
+        goal_msg.pose.orientation.z = math.sin(position[2] / 2.0)
+        goal_msg.pose.orientation.w = math.cos(position[2] / 2.0)
+        
+        # Send goal using NavigateToPose action
+        action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+        if not action_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().error("NavigateToPose action server not available")
+            return False
+        
+        goal = NavigateToPose.Goal()
+        goal.pose = goal_msg
+        action_client.send_goal_async(goal)
+        return True
 def main(args=None):
     print('Hi from rat_roulette_pkg.')
     rclpy.init(args=args)
