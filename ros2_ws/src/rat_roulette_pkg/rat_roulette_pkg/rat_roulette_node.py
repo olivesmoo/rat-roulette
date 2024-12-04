@@ -80,6 +80,8 @@ class RatRoulette(Node):
                 self.result = random.randint(0, 7)
                 # self.result = 2
                 print("random result: ", self.result, flush=True)
+                self.play_audio("prediction.mp3")
+                self.play_audio("waiting.mp3")
                 self.go_state(self.SPIN)
             else:
                 print("camera not working")
@@ -137,7 +139,7 @@ class RatRoulette(Node):
                 distance = 0
                 if number == 1:
                     multiplier = -1
-                    distance = 3
+                    distance = 3.1
                 elif number == 2:
                     multiplier = -1
                     distance = 1.2
@@ -145,7 +147,7 @@ class RatRoulette(Node):
                     multiplier = 1
                     distance = 1.2
                 elif number == 4:
-                    distance = 3
+                    distance = 3.1
 
                 if not self.check_spin_time(0.8):
                     out_vel.angular.z = self.SPEED_ANGULAR * multiplier
@@ -164,15 +166,19 @@ class RatRoulette(Node):
                                 self.go_state(self.DETECT)
         elif self.state == self.DETECT:
             wait_time = 0
-            if not self.person_detected() and self.check_spin_time(3):
+            if not self.person_detected() and self.check_spin_time(1.5):
                 print(":( No winners", flush=True)
                 wait_time = 2
             elif self.person_detected():
                 print("Yes winners!!", flush=True)
-                wait_time = 10
+                wait_time = 8
                 self.person += 1
-            if self.check_spin_time(3 + wait_time):
+            if self.check_spin_time(1.5 + wait_time):
                 if self.person >= 5:
+                    if self.second:  
+                        self.play_audio("twocheeses.mp3")
+                    else:
+                        self.play_audio("onecheese.mp3")
                     self.play_audio("clapping.mp3")
                 else:
                     self.play_audio("gameover.mp3")
@@ -211,7 +217,7 @@ class RatRoulette(Node):
             distance = 0
             if number == 1:
                 multiplier = 1
-                distance = 3
+                distance = 3.1
             elif number == 2:
                 multiplier = 1
                 distance = 1.2
@@ -220,7 +226,7 @@ class RatRoulette(Node):
                 distance = 1.2
             elif number == 4:
                 multiplier = -1
-                distance = 3
+                distance = 3.1
 
             if not self.check_spin_time(0.8):
                 out_vel.angular.z = self.SPEED_ANGULAR * multiplier
