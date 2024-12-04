@@ -166,14 +166,14 @@ class RatRoulette(Node):
                                 self.go_state(self.DETECT)
         elif self.state == self.DETECT:
             wait_time = 0
-            if not self.person_detected() and self.check_spin_time(1.5):
+            if not self.person_detected() and self.check_spin_time(2.9):
                 print(":( No winners", flush=True)
                 wait_time = 2
             elif self.person_detected():
                 print("Yes winners!!", flush=True)
                 wait_time = 8
                 self.person += 1
-            if self.check_spin_time(1.5 + wait_time):
+            if self.check_spin_time(2.0):
                 if self.person >= 5:
                     if self.second:  
                         self.play_audio("twocheeses.mp3")
@@ -269,7 +269,7 @@ class RatRoulette(Node):
 
                     bbox_width = bbox.size_x
                     bbox_height = bbox.size_y
-                    min_bbox_size = 50
+                    min_bbox_size = 20
 
 
                     if abs(bbox_center_x - image_center_x) <= tolerance and \
