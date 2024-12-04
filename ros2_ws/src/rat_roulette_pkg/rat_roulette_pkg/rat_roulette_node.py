@@ -49,7 +49,11 @@ class RatRoulette(Node):
         self.state_ts = self.get_clock().now()
         self.second = False
 
+        self.turn_90 = 0.8
+
         self.person = 0
+
+        self.audio = False
 
         # subscribe to YOLO pedestrian detections /color/mobilenet_detections
         self.person_detection_sub = self.create_subscription(
@@ -81,13 +85,16 @@ class RatRoulette(Node):
                 print("camera not working")
             #self.go_state(self.SPIN)
         elif self.state == self.SPIN:
-            if not hasattr(self, 'spin_audio_thread') or not self.spin_audio_thread.is_alive():
-                # Specify the audio file to play during the spin state
-                spin_audio_file = "wheel2.mp3"
-                self.spin_audio_thread = threading.Thread(target=self.play_audio, args=(spin_audio_file,))
-                self.spin_audio_thread.start()
+            if not self.audio:
+                if not hasattr(self, 'spin_audio_thread') or not self.spin_audio_thread.is_alive():
+                    # Specify the audio file to play during the spin state
+                    self.audio = True
+                    spin_audio_file = "wheel3.mp3"
+                    self.spin_audio_thread = threading.Thread(target=self.play_audio, args=(spin_audio_file,))
+                    self.spin_audio_thread.start()
 
             if self.check_spin_time(self.spin_times[self.result]):
+                self.audio = False
                 out_vel.angular.z = 0.0
                 self.go_state(self.ANNOUNCE)
             else:
@@ -104,15 +111,6 @@ class RatRoulette(Node):
         elif self.state == self.NAVIGATE:
             # navigate to answer
             if not self.second:
-                # if not self.check_spin_time(self.color_times[self.result]-0.1):
-                #     out_vel.angular.z = self.SPEED_ANGULAR
-                # else:
-                #     out_vel.angular.z = 0.0
-                #     if not self.check_spin_time(self.color_times[self.result] + 2.9):
-                #         out_vel.linear.x = self.SPEED_LINEAR
-                #     else:
-                #         out_vel.linear.x = 0.0
-                #         self.go_state(self.DETECT)
                 if not self.check_spin_time(self.origin_times[self.result]):
                     out_vel.angular.z = self.SPEED_ANGULAR * (self.origin_directions[self.result])
                 else:
@@ -142,10 +140,10 @@ class RatRoulette(Node):
                     distance = 3
                 elif number == 2:
                     multiplier = -1
-                    distance = 1.5
+                    distance = 1.2
                 elif number == 3:
                     multiplier = 1
-                    distance = 1.5
+                    distance = 1.2
                 elif number == 4:
                     distance = 3
 
@@ -164,33 +162,12 @@ class RatRoulette(Node):
                                 out_vel.linear.x = self.SPEED_LINEAR
                             else:
                                 self.go_state(self.DETECT)
-                    
-                # if not self.check_spin_time(self.s_time):
-                #     number = self.results[self.result][1]
-                #     if number == 1:
-                #         print("its 1")
-                #         out_vel.angular.z = -self.SPEED_ANGULAR
-                #     elif number == 2:
-                #         out_vel.angular.z = -self.SPEED_ANGULAR
-                #         print("its 2")
-                #     elif number == 3:
-                #         out_vel.angular.z = self.SPEED_ANGULAR
-                #         print("its 3")
-                #     else:
-                #         out_vel.angular.z = self.SPEED_ANGULAR
-                #         print("its 4")
-                # else:
-                #     if not self.check_spin_time(self.s_time + 3.0):
-                #         out_vel.linear.x = self.SPEED_LINEAR
-                #     else:
-                #         self.go_state(self.DETECT)
-
         elif self.state == self.DETECT:
             wait_time = 0
             if not self.person_detected() and self.check_spin_time(3):
                 print(":( No winners", flush=True)
                 wait_time = 2
-            else:
+            elif self.person_detected():
                 print("Yes winners!!", flush=True)
                 wait_time = 10
                 self.person += 1
@@ -198,7 +175,7 @@ class RatRoulette(Node):
                 if self.person >= 5:
                     self.play_audio("clapping.mp3")
                 else:
-                    print("naurrrrr")
+                    self.play_audio("gameover.mp3")
                 self.person = 0
                 if not self.second:
                     self.second = True
@@ -229,20 +206,6 @@ class RatRoulette(Node):
                             self.go_state(self.NAVIGATE)
 
         elif self.state == self.RESET:
-            # go back to original position
-            # if not self.check_spin_time(self.r_time/2):
-            #     out_vel.angular.z = self.SPEED_ANGULAR
-            # else:
-            #     if not self.check_spin_time(5.0):
-            #         out_vel.linear.x = self.SPEED_LINEAR
-            #     else:
-            #         if not self.check_spin_time(5 + self.s_time * 2):
-            #             if self.results[self.result][1] == 1 or self.results[self.result][1] == 2:
-            #                 out_vel.angular.z = self.SPEED_ANGULAR
-            #             else:
-            #                 out_vel.angular.z = -self.SPEED_ANGULAR
-            #         self.go_state(self.START)
-
             number = self.results[self.result][1]
             multiplier = 1
             distance = 0
@@ -251,10 +214,10 @@ class RatRoulette(Node):
                 distance = 3
             elif number == 2:
                 multiplier = 1
-                distance = 1.5
+                distance = 1.2
             elif number == 3:
                 multiplier = -1
-                distance = 1.5
+                distance = 1.2
             elif number == 4:
                 multiplier = -1
                 distance = 3
