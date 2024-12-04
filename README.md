@@ -25,3 +25,14 @@ eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519_turtwig
 ```
 Passkey: Turtwig
+
+## Audio Speaker Settings
+Set default speakers
+```
+pactl list sinks
+pactl set-default-sink alsa_output.usb-Anhui_LISTENAI_CO._LTD._USB_Speaker_Phone-00.mono-fallback
+```
+To adjust audio levels
+```
+alsamixer
+```
