@@ -2,6 +2,8 @@ import rclpy
 import os
 import random
 import math
+import threading
+
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
@@ -34,12 +36,15 @@ class RatRoulette(Node):
         self.state = self.START # Set initial state
         self.result = 0 #index of results
 
-        self.r_time = 3.345 # time per rotation
+        self.r_time = 3.343 # time per rotation
         self.s_time = self.r_time / 8 # time per slice
         self.offset = self.s_time / 2
         self.results = [[0, 1], [0, 2], [0, 3], [0, 4], [1, 1], [1, 2], [1, 3], [1, 4]]
-        self.spin_times = [self.s_time * 31 + self.offset , self.s_time * 25 + self.offset, self.s_time * 27 + self.offset, self.s_time * 29 + self.offset, self.s_time * 26 + self.offset, self.s_time * 28 + self.offset, self.s_time * 30 + self.offset, self.s_time * 32 + self.offset] #TODO: Change when we have the times for each spin
+        self.spin_times = [self.s_time * 24 + self.offset , self.s_time * 26 + self.offset, self.s_time * 28 + self.offset, self.s_time * 30 + self.offset, self.s_time * 27 + self.offset - 0.1, self.s_time * 29 + self.offset, self.s_time * 31 + self.offset, self.s_time * 25 + self.offset - 0.1] #TODO: Change when we have the times for each spin
+        self.origin_times = [self.offset, self.s_time * 2 + self.offset - 0.1, self.s_time * 3, self.s_time, self.offset, self.s_time + self.offset, self.s_time * 3 + self.offset, self.s_time*2 + 0.1]
+        self.origin_directions = [-1, -1, 1, 1, 1, -1, -1, 1]
 
+        self.number_times = [3, 1.5, 1.5, 3]
         self.color_times = [self.s_time * 7, self.s_time * 5, self.s_time * 3, self.s_time, self.s_time * 3 - self.offset, self.s_time - self.offset, self.s_time * 7 - self.offset, self.s_time * 5 - self.offset]
         self.state_ts = self.get_clock().now()
         self.second = False
@@ -69,78 +74,129 @@ class RatRoulette(Node):
         if self.state == self.START:
             if self.last_detection is not None:
                 self.result = random.randint(0, 7)
-                print("random result: ", self.result)
+                # self.result = 2
+                print("random result: ", self.result, flush=True)
                 self.go_state(self.SPIN)
             else:
                 print("camera not working")
             #self.go_state(self.SPIN)
         elif self.state == self.SPIN:
+            if not hasattr(self, 'spin_audio_thread') or not self.spin_audio_thread.is_alive():
+                # Specify the audio file to play during the spin state
+                spin_audio_file = "wheel2.mp3"
+                self.spin_audio_thread = threading.Thread(target=self.play_audio, args=(spin_audio_file,))
+                self.spin_audio_thread.start()
+
             if self.check_spin_time(self.spin_times[self.result]):
                 out_vel.angular.z = 0.0
                 self.go_state(self.ANNOUNCE)
             else:
                 out_vel.angular.z = self.SPEED_ANGULAR
         elif self.state == self.ANNOUNCE:
-            #os.system("mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/win.mp3")
-            if self.results[self.result][0] == 0:
-                audio_file = f"mpg123 /home/ubuntu/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/audio/black{self.results[self.result][1]}.mp3"
-            else:
-                audio_file = f"mpg123 /home/ubuntu/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/audio/red{self.results[self.result][1]}.mp3"
+            if  self.check_spin_time(1):
+                if self.results[self.result][0] == 0:
+                    audio_file = f"black{self.results[self.result][1]}.mp3"
 
-            # print("The result is... ", self.results[self.result])
-            os.system(audio_file)
-            # elapsed = self.get_clock().now() - self.state_ts
-            # if elapsed >= Duration(seconds=10):
-            self.go_state(self.NAVIGATE)
+                else:
+                    audio_file = f"red{self.results[self.result][1]}.mp3"
+                self.play_audio(audio_file)
+                self.go_state(self.NAVIGATE)
         elif self.state == self.NAVIGATE:
             # navigate to answer
             if not self.second:
-                #turn to face right side 
-                #total = self.s_time * 38
-                #diff = total - self.spin_times[self.result]
-                if not self.check_spin_time(self.color_times[self.result]-0.1):
-                    out_vel.angular.z = self.SPEED_ANGULAR
+                # if not self.check_spin_time(self.color_times[self.result]-0.1):
+                #     out_vel.angular.z = self.SPEED_ANGULAR
+                # else:
+                #     out_vel.angular.z = 0.0
+                #     if not self.check_spin_time(self.color_times[self.result] + 2.9):
+                #         out_vel.linear.x = self.SPEED_LINEAR
+                #     else:
+                #         out_vel.linear.x = 0.0
+                #         self.go_state(self.DETECT)
+                if not self.check_spin_time(self.origin_times[self.result]):
+                    out_vel.angular.z = self.SPEED_ANGULAR * (self.origin_directions[self.result])
                 else:
                     out_vel.angular.z = 0.0
-                    if not self.check_spin_time(self.color_times[self.result] + 2.9):
+                    if not self.check_spin_time(self.origin_times[self.result] + 2.1):
                         out_vel.linear.x = self.SPEED_LINEAR
                     else:
                         out_vel.linear.x = 0.0
-                        self.go_state(self.DETECT)
+                        if not self.check_spin_time(self.origin_times[self.result] + 2.9):
+                            if self.results[self.result][0] == 0:
+                                out_vel.angular.z = self.SPEED_ANGULAR * -1
+                            else:
+                                out_vel.angular.z = self.SPEED_ANGULAR
+                                
+                        else:
+                            if not self.check_spin_time(self.origin_times[self.result] + 5.2):
+                                out_vel.linear.x = self.SPEED_LINEAR
+                            else:
+                                self.go_state(self.DETECT)
             else:
                 # turn to left side
-                if not self.check_spin_time(self.s_time):
-                    number = self.results[self.result][1]
-                    if number == 1:
-                        print("its 1")
-                        out_vel.angular.z = -self.SPEED_ANGULAR
-                    elif number == 2:
-                        out_vel.angular.z = -self.SPEED_ANGULAR
-                        print("its 2")
-                    elif number == 3:
-                        out_vel.angular.z = self.SPEED_ANGULAR
-                        print("its 3")
-                    else:
-                        out_vel.angular.z = self.SPEED_ANGULAR
-                        print("its 4")
+                number = self.results[self.result][1]
+                multiplier = 1
+                distance = 0
+                if number == 1:
+                    multiplier = -1
+                    distance = 3
+                elif number == 2:
+                    multiplier = -1
+                    distance = 1.5
+                elif number == 3:
+                    multiplier = 1
+                    distance = 1.5
+                elif number == 4:
+                    distance = 3
+
+                if not self.check_spin_time(0.8):
+                    out_vel.angular.z = self.SPEED_ANGULAR * multiplier
                 else:
-                    if not self.check_spin_time(self.s_time + 3.0):
+                    if not self.check_spin_time(0.8 + distance):
                         out_vel.linear.x = self.SPEED_LINEAR
+                        out_vel.angular.z = 0.0
                     else:
-                        self.go_state(self.DETECT)
+                        if not self.check_spin_time(1.6 + distance):
+                            out_vel.angular.z = self.SPEED_ANGULAR * multiplier * -1
+                            out_vel.linear.x = 0.0
+                        else:
+                            if not self.check_spin_time(3.9 + distance):
+                                out_vel.linear.x = self.SPEED_LINEAR
+                            else:
+                                self.go_state(self.DETECT)
+                    
+                # if not self.check_spin_time(self.s_time):
+                #     number = self.results[self.result][1]
+                #     if number == 1:
+                #         print("its 1")
+                #         out_vel.angular.z = -self.SPEED_ANGULAR
+                #     elif number == 2:
+                #         out_vel.angular.z = -self.SPEED_ANGULAR
+                #         print("its 2")
+                #     elif number == 3:
+                #         out_vel.angular.z = self.SPEED_ANGULAR
+                #         print("its 3")
+                #     else:
+                #         out_vel.angular.z = self.SPEED_ANGULAR
+                #         print("its 4")
+                # else:
+                #     if not self.check_spin_time(self.s_time + 3.0):
+                #         out_vel.linear.x = self.SPEED_LINEAR
+                #     else:
+                #         self.go_state(self.DETECT)
 
         elif self.state == self.DETECT:
             wait_time = 0
             if not self.person_detected() and self.check_spin_time(3):
-                print(":( No winners")
-                wait_time = 3
+                print(":( No winners", flush=True)
+                wait_time = 2
             else:
+                print("Yes winners!!", flush=True)
                 wait_time = 10
                 self.person += 1
             if self.check_spin_time(3 + wait_time):
-                self.person = False #reset value
-                if self.person >= 1:
-                    os.system("mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/audio/win.mp3")
+                if self.person >= 5:
+                    self.play_audio("clapping.mp3")
                 else:
                     print("naurrrrr")
                 self.person = 0
@@ -151,34 +207,77 @@ class RatRoulette(Node):
                     self.second = False
                     self.go_state(self.RESET)
         elif self.state == self.MIDDLE:
-            if not self.check_spin_time(self.r_time/2):
-                out_vel.angular.z = self.SPEED_ANGULAR
+            multiplier = 1
+            if self.results[self.result][0] == 0:
+                multiplier = -1
+            if not self.check_spin_time(0.8):
+                out_vel.angular.z = self.SPEED_ANGULAR * multiplier
             else:
-                if not self.check_spin_time(5.0):
+                if not self.check_spin_time(2.9):
                     out_vel.linear.x = self.SPEED_LINEAR
+                    out_vel.angular.z = 0.0
                 else:
-                    if not self.check_spin_time(5.0 + self.s_time):
-                        if self.results[self.result][0] == 0:
-                            out_vel.angular.z = -self.SPEED_ANGULAR
-                        else:
-                            out_vel.angular.z = self.SPEED_ANGULAR
+                    if not self.check_spin_time(3.7):
+                        out_vel.angular.z = self.SPEED_ANGULAR * multiplier
+                        out_vel.linear.x = 0.0
+
                     else:
-                        self.go_state(self.NAVIGATE)
+                        if not self.check_spin_time(6.0):
+                            out_vel.linear.x = self.SPEED_LINEAR
+                            out_vel.angular.z = 0.0
+                        else:
+                            self.go_state(self.NAVIGATE)
 
         elif self.state == self.RESET:
             # go back to original position
-            if not self.check_spin_time(self.r_time/2):
-                out_vel.angular.z = self.SPEED_ANGULAR
+            # if not self.check_spin_time(self.r_time/2):
+            #     out_vel.angular.z = self.SPEED_ANGULAR
+            # else:
+            #     if not self.check_spin_time(5.0):
+            #         out_vel.linear.x = self.SPEED_LINEAR
+            #     else:
+            #         if not self.check_spin_time(5 + self.s_time * 2):
+            #             if self.results[self.result][1] == 1 or self.results[self.result][1] == 2:
+            #                 out_vel.angular.z = self.SPEED_ANGULAR
+            #             else:
+            #                 out_vel.angular.z = -self.SPEED_ANGULAR
+            #         self.go_state(self.START)
+
+            number = self.results[self.result][1]
+            multiplier = 1
+            distance = 0
+            if number == 1:
+                multiplier = 1
+                distance = 3
+            elif number == 2:
+                multiplier = 1
+                distance = 1.5
+            elif number == 3:
+                multiplier = -1
+                distance = 1.5
+            elif number == 4:
+                multiplier = -1
+                distance = 3
+
+            if not self.check_spin_time(0.8):
+                out_vel.angular.z = self.SPEED_ANGULAR * multiplier
             else:
-                if not self.check_spin_time(5.0):
+                if not self.check_spin_time(0.8 + distance):
                     out_vel.linear.x = self.SPEED_LINEAR
+                    out_vel.angular.z = 0.0
                 else:
-                    if not self.check_spin_time(5 + self.s_time * 2):
-                        if self.results[self.result][1] == 1 or self.results[self.result][1] == 2:
-                            out_vel.angular.z = self.SPEED_ANGULAR
+                    if not self.check_spin_time(1.6 + distance):
+                        out_vel.angular.z = self.SPEED_ANGULAR * multiplier
+                        out_vel.linear.x = 0.0
+                    else:
+                        if not self.check_spin_time(3.9 + distance):
+                            out_vel.linear.x = self.SPEED_LINEAR
                         else:
-                            out_vel.angular.z = -self.SPEED_ANGULAR
-                    self.go_state(self.START)
+                            if not self.check_spin_time(4.7 + distance):
+                                out_vel.angular.z = self.SPEED_ANGULAR
+                            else:
+                                self.go_state(self.START)
+
                    
         self.vel_pub.publish(out_vel)
 
@@ -199,14 +298,21 @@ class RatRoulette(Node):
 
                     tolerance = self.image_width * 0.1
 
-                    if abs(bbox_center_x - image_center_x) <= tolerance:
+                    bbox_width = bbox.size_x
+                    bbox_height = bbox.size_y
+                    min_bbox_size = 50
+
+
+                    if abs(bbox_center_x - image_center_x) <= tolerance and \
+                        bbox_width >= min_bbox_size and bbox_height >= min_bbox_size:
                         return True
         return False
     def check_spin_time(self, duration):
         elapsed = self.get_clock().now() - self.state_ts
-        # print("elapsed time: ", elapsed)
-        # print("duration: " , duration)
         return elapsed >= Duration(seconds=duration)
+    
+    def play_audio(self, audio_file):
+        os.system(f"mpg123 ~/rat-roulette/ros2_ws/src/rat_roulette_pkg/rat_roulette_pkg/audio/{audio_file}")
 
 def main(args=None):
     print('Hi from rat_roulette_pkg.')
