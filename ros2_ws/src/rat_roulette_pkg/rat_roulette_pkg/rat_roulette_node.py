@@ -176,9 +176,9 @@ class RatRoulette(Node):
             if self.check_spin_time(3.0):
                 if self.person >= 2:
                     if self.second:  
-                        self.play_audio("twocheeses.mp3")
+                        self.play_audio("twocheeses-loud.mp3")
                     else:
-                        self.play_audio("onecheese.mp3")
+                        self.play_audio("onecheese-loud.mp3")
                     self.play_audio("clapping.mp3")
                 else:
                     self.play_audio("gameover.mp3")
