@@ -1,4 +1,9 @@
 # rat-roulette
+Read more here: [rat-roulette-report](./report.pdf)
+
+Photo:
+![rat_ratio (1)](https://github.com/user-attachments/assets/1dbe31a4-e579-4f05-8934-0b4ca39f5942)
+
 
 ## Running the Turtlebot
 ### Step 1:
